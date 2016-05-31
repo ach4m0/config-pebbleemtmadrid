@@ -81,7 +81,7 @@
         // Si ya hay un listado guardado generamos la lista
         if (typeof window.localStorage !== "undefined") {
           console.log("Not undefined :)");
-          if (window.localStorage.configpebbleemtmadrid) {
+          if (window.localStorage.configpebbleemtmadrid && typeof window.localStorage.configpebbleemtmadrid !== "string") {
             configData = JSON.parse(window.localStorage.configpebbleemtmadrid);
             configData.forEach(function(item){
               addItemList(item.title,item.stopId);
