@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Simply Clean</title>
+    <title>EMT Madrid Pebble</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.1/jquery.mobile-1.4.1.min.css" />
@@ -11,73 +11,111 @@
   <body>
     <div data-role="page" id="main">
       <div data-role="header" class="jqm-header">
-        <h1>Simply Clean</h1>
+        <h1>EMT Madrid Pebble</h1>
       </div>
 
       <div data-role="content">
-
-<div data-role="collapsible-set" data-theme="c" data-content-theme="d" data-mini="false">
-  <div data-role="collapsible">
-    <h3>Look and Feel</h3>
-
-    <fieldset data-role="controlgroup" data-type="vertical" data-mini="true">
-        <legend>While bluetooth is disconnected, theme will be: </legend>
-            <input name="key0" id="key0-0" data-type="int" value="0" checked="checked" type="radio">
-            <label for="key0-0">White on black (dark)</label>
-            <input name="key0" id="key0-1" data-type="int" value="1" type="radio">
-            <label for="key0-1">Black on white (light)</label>
-    </fieldset>
-    
-    <fieldset data-role="controlgroup" data-type="vertical" data-mini="true">
-        <legend>While bluetooth is connected, theme will be: </legend>
-            <input name="key1" id="key1-0" data-type="int" value="0" checked="checked" type="radio">
-            <label for="key1-0">White on black (dark)</label>
-            <input name="key1" id="key1-1" data-type="int" value="1" type="radio">
-            <label for="key1-1">Black on white (light)</label>
-    </fieldset>
-  </div>
-<br />
-    <div class="ui-body ui-body-c">
-      <fieldset class="ui-grid-a">
-          <div class="ui-block-a"><button type="submit" data-theme="d" id="b-cancel">Cancel</button></div>
-          <div class="ui-block-b"><button type="submit" data-theme="a" id="b-submit">Save</button></div>
-      </fieldset>
+        <div class="ui-block">
+          <h2>Crear parada</h2>
+          <label for="stopTitle">Nombre parada (por ejemplo Casa):</label>
+          <input type="text" id="stopTitle" required></input>
+          <label for="stopId">N&uacute;mero parada (por ejemplo 1010):</label>
+          <input type="number" id="stopId" required></input>
+          <button type="submit" id="btnNew">Crear</button>
+        </div>
+        <br/>
+        <div class="ui-block">
+          <h2>Listado paradas</h2>
+          <ul data-role="listview" data-inset="true" id="stopLists"></ul>
+          <br/>
+          <div class="ui-block-a"><button type="submit" id="btnCancel">Cancelar</button></div>
+          <div class="ui-block-b"><button type="submit" id="btnSave">Guardar</button></div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
     <script>
-      function saveOptions() {
-        var options = {
-          'dateformat':     Number( $("input[name=key0]:checked").val() ),
-      	  'btdisalert':     Number( $("input[name=key1]:checked").val() )
-        }
-        return options;
-      }
       $().ready(function() {
-       if (typeof window.localStorage !== "undefined") {
-       	console.log("Not undefined :)");
-        if (window.localStorage.configpebbleemtmadrid) {
-          ls_pto = JSON.parse(window.localStorage.configpebbleemtmadrid);
-          // the Pebble webview dies on the next line...
-          $("input[name=key0][id=key0-"+ls_pto["dateformat"]+"]").prop('checked',true);
-          $("input[name=key0]").checkboxradio('refresh');
-          $("input[name=key1][id=key1-"+ls_pto["btdisalert"]+"]").prop('checked',true);
-          $("input[name=key1]").checkboxradio('refresh');
+
+        // Borra un elemento de la lista
+        var deleteItemList = function(e){
+          e.preventDefault();
+          if(confirm("¿Está seguro que desea borrar la parada?")){
+            $(e.currentTarget).parent().remove();
+          }
+        };
+
+        // Anyade un elemento a la lista
+        var addItemList = function(title, stopId){
+          li = $('<li>');
+          dataLink = $('<a/>',{
+            'data-title': title,
+            'data-stopId': stopId,
+            'class': 'dataItem',
+            'text': title + ' - ' + stopId
+          });
+          deleteLink = $('<a/>',{
+            'href': '#',
+            'class': 'deleteItem',
+            'data-icon': 'delete'
+          });
+          li.append(dataLink);
+          li.append(deleteLink);
+          deleteLink.click(deleteItemList);
+          $('#stopLists').append(li);
+          $('#stopLists').listview( "refresh" );
+        };
+
+        // Devuelve la lista en un array de objetos
+        var getDataList = function(){
+          items = [];
+          $('#stopLists > li > a.dataItem').each(function(idx, item){
+            items.push({
+              title: $(item).attr('data-title'),
+              stopId: $(item).attr('data-stopId')
+            });
+          });
+          return items;
+        };
+
+        // Documento listo
+        // Si ya hay un listado guardado generamos la lista
+        if (typeof window.localStorage !== "undefined") {
+          console.log("Not undefined :)");
+          if (window.localStorage.configpebbleemtmadrid) {
+            configData = JSON.parse(window.localStorage.configpebbleemtmadrid);
+            configData.forEach(function(item){
+              addItemList(item.title,item.stopId);
+            });
+          }
         }
-       }
-        $("#b-cancel").click(function() {
-          console.log("Cancel");
+
+        // Eventos
+        // Crea nueva parada en la lista
+        $('#btnNew').click(function(){
+          stopTitleForm = $('#stopTitle');
+          stopIdForm = $('#stopId');
+          if(stopTitleForm.val() === '' || stopIdForm.val() === ''){
+            alert('Se necesitan los dos parámetros para crear la parada');
+            return undefined;
+          }
+          return addItemList(stopTitleForm.val(),stopIdForm.val());
+        });
+
+        // Cancela los cambios
+        $("#btnCancel").click(function() {
+          console.log("Cancelando...");
           document.location = "pebblejs://close";
         });
-        $("#b-submit").click(function() {
-          console.log("Submit");
-          ls_pto = JSON.stringify(saveOptions());
+
+        // Guarda la nueva configuracion y regresa al pebble
+        $("#btnSave").click(function() {
+          console.log("Guardando...");
+          configData = JSON.stringify(getDataList());
           if (typeof window.localStorage !== "undefined") {
-            window.localStorage.configpebbleemtmadrid = ls_pto;
+            window.localStorage.configpebbleemtmadrid = configData;
           }
-          var location = "pebblejs://close#" + ls_pto;
-          console.log("Warping to: " + location);
-          console.log(location);
+          var location = "pebblejs://close#" + configData;
+          console.log("Redirigiendo a " + location);
           document.location = location;
         });
       });
