@@ -35,7 +35,6 @@
     </div>
     <script>
       $().ready(function() {
-
         // Funcion para extraer parametros GET de la url
         var getQueryParam = function(variable, default_) {
             var query = location.search.substring(1);
@@ -47,7 +46,6 @@
             }
             return default_ || false;
         };
-
         // Borra un elemento de la lista
         var deleteItemList = function(e){
           e.preventDefault();
@@ -55,7 +53,6 @@
             $(e.currentTarget).parent().remove();
           }
         };
-
         // Anyade un elemento a la lista
         var addItemList = function(title, stopId){
           li = $('<li>');
@@ -76,7 +73,6 @@
           $('#stopLists').append(li);
           $('#stopLists').listview( "refresh" );
         };
-
         // Devuelve la lista en un array de objetos
         var getDataList = function(){
           items = [];
@@ -88,19 +84,20 @@
           });
           return items;
         };
-
         // Documento listo
-        // Si ya hay un listado guardado generamos la lista
+        // Si ya hay un listado guardado o viene por parametro generamos la lista
         if (typeof window.localStorage !== "undefined") {
           console.log("Not undefined :)");
+          var configData = [];
           if (window.localStorage.configpebbleemtmadrid && typeof window.localStorage.configpebbleemtmadrid !== "string") {
             configData = JSON.parse(window.localStorage.configpebbleemtmadrid);
-            configData.forEach(function(item){
-              addItemList(item.title,item.stopId);
-            });
           }
+          // Rellenamos el objeto si viene por parametro
+          configData = JSON.parse(decodeURIComponent(getQueryParam('configData','')));
+          configData.forEach(function(item){
+            addItemList(item.title,item.stopId);
+          });
         }
-
         // Eventos
         // Crea nueva parada en la lista
         $('#btnNew').click(function(){
@@ -112,13 +109,11 @@
           }
           return addItemList(stopTitleForm.val(),stopIdForm.val());
         });
-
         // Cancela los cambios
         $("#btnCancel").click(function() {
           console.log("Cancelando...");
           document.location = "pebblejs://close";
         });
-
         // Guarda la nueva configuracion y regresa al pebble
         $("#btnSave").click(function() {
           console.log("Guardando...");
@@ -131,7 +126,6 @@
           console.log("Redirigiendo a " + location);
           document.location = location;
         });
-
       });
     </script>
   </body>
