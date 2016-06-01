@@ -94,9 +94,11 @@
           }
           // Rellenamos el objeto si viene por parametro
           configData = JSON.parse(decodeURIComponent(getQueryParam('configData','')));
-          configData.forEach(function(item){
-            addItemList(item.title,item.stopId);
-          });
+          if(typeof configData === 'object'){
+            configData.forEach(function(item){
+              addItemList(item.title,item.stopId);
+            });
+          }
         }
         // Eventos
         // Crea nueva parada en la lista
@@ -107,7 +109,9 @@
             alert('Se necesitan los dos parámetros para crear la parada');
             return undefined;
           }
-          return addItemList(stopTitleForm.val(),stopIdForm.val());
+          addItemList(stopTitleForm.val(),stopIdForm.val());
+          stopTitleForm.val('');
+          stopIdForm.val('');
         });
         // Cancela los cambios
         $("#btnCancel").click(function() {
