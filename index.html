@@ -112,7 +112,8 @@
         // Cancela los cambios
         $("#btnCancel").click(function() {
           console.log("Cancelando...");
-          document.location = "pebblejs://close";
+          var return_to = getQueryParam('return_to', 'pebblejs://close');
+          document.location = return_to;
         });
         // Guarda la nueva configuracion y regresa al pebble
         $("#btnSave").click(function() {
